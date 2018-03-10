@@ -12,7 +12,7 @@ import {
 import { PagerRendererPropType } from './TabViewPropTypes';
 import type {
   PagerRendererProps,
-  TransitionConfigurator,
+    TransitionConfigurator,
 } from './TabViewTypeDefinitions';
 
 type GestureEvent = {
@@ -60,7 +60,7 @@ const DefaultTransitionSpec = {
   friction: 35,
 };
 
-export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
+export default class TabViewPagerPan<T: *> extends React.Component < Props < T >> {
   static propTypes = {
     ...PagerRendererPropType,
     configureTransition: PropTypes.func.isRequired,
@@ -142,6 +142,10 @@ export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
   };
 
   _finishGesture = (evt: GestureEvent, gestureState: GestureState) => {
+    if (typeof this.props.onSwipeEnd === 'function') {
+      this.props.onSwipeEnd(evt, gestureState);
+    }
+
     const {
       navigationState,
       layout,
@@ -149,10 +153,6 @@ export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
     } = this.props;
 
     let { swipeVelocityThreshold = 0.15 } = this.props;
-
-    if (typeof this.props.onSwipeEnd === 'function') {
-      this.props.onSwipeEnd(evt, gestureState);
-    }
 
     if (Platform.OS === 'android') {
       // on Android, velocity is way lower due to timestamp being in nanosecond
@@ -216,8 +216,7 @@ export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
       }),
     ]).start(({ finished }) => {
       if (finished) {
-        const route = this.props.navigationState.routes[index];
-        this.props.jumpTo(route.key);
+        this.props.jumpToIndex(index);
         this._pendingIndex = null;
       }
     });
@@ -226,7 +225,7 @@ export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
   };
 
   _panResponder: any;
-  _pendingIndex: ?number;
+  _pendingIndex: ? number;
 
   render() {
     const { panX, offsetX, navigationState, layout, children } = this.props;
@@ -245,9 +244,9 @@ export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
           styles.sheet,
           width
             ? {
-                width: routes.length * width,
-                transform: [{ translateX }],
-              }
+              width: routes.length * width,
+              transform: [{ translateX }],
+            }
             : null,
         ]}
         {...this._panResponder.panHandlers}
