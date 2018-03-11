@@ -26,7 +26,7 @@ export default class TabViewPagerExperimental<T: *> extends React.Component <
       swipeDistanceThreshold: PropTypes.number,
       swipeVelocityThreshold: PropTypes.number,
       GestureHandler: PropTypes.object,
-      onSwipeEnd: PropTypes.func,
+      handleStateChange: PropTypes.func,
     };
 
     static defaultProps = {
@@ -44,13 +44,10 @@ export default class TabViewPagerExperimental<T: *> extends React.Component <
     }
 
   _handleHandlerStateChange = event => {
-      if (typeof this.props.onSwipeEnd === 'function') {
-        this.props.onSwipeEnd(event);
+      if (typeof this.props.handleStateChange === 'function') {
+        this.props.handleStateChange(event);
       }
       const { GestureHandler } = this.props;
-      if (typeof this.props.onSwipeEnd === 'function') {
-        this.props.onSwipeEnd(event, GestureHandler.State.END);
-      }
       if (event.nativeEvent.state === GestureHandler.State.END) {
         const {
           navigationState,
