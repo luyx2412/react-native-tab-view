@@ -105,25 +105,50 @@ export default class TabViewPagerExperimental<T: *> extends React.Component <
       const { timing, ...transitionConfig } = DefaultTransitionSpec;
       const { useNativeDriver } = this.props;
 
-      Animated.parallel([
-        timing(this.props.panX, {
-          ...transitionConfig,
-          toValue: 0,
-          velocity,
-          useNativeDriver,
-        }),
-        timing(this.props.offsetX, {
-          ...transitionConfig,
-          toValue: offset,
-          velocity,
-          useNativeDriver,
-        }),
-      ]).start(({ finished }) => {
+      const animations =
+        true && true
+          ? [
+            timing(this.props.panX, {
+              ...transitionConfig,
+              toValue: 0,
+              velocity,
+              useNativeDriver,
+            }),
+            timing(this.props.offsetX, {
+              ...transitionConfig,
+              toValue: offset,
+              velocity,
+              useNativeDriver,
+            }),
+          ]
+          : [];
+
+      Animated.parallel(animations).start(({ finished }) => {
         if (finished) {
           this.props.jumpToIndex(index);
           this._pendingIndex = null;
         }
       });
+
+      // Animated.parallel([
+      //   timing(this.props.panX, {
+      //     ...transitionConfig,
+      //     toValue: 0,
+      //     velocity,
+      //     useNativeDriver,
+      //   }),
+      //   timing(this.props.offsetX, {
+      //     ...transitionConfig,
+      //     toValue: offset,
+      //     velocity,
+      //     useNativeDriver,
+      //   }),
+      // ]).start(({ finished }) => {
+      //   if (finished) {
+      //     this.props.jumpToIndex(index);
+      //     this._pendingIndex = null;
+      //   }
+      // });
 
       this._pendingIndex = index;
     };
