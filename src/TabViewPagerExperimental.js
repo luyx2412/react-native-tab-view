@@ -27,6 +27,7 @@ export default class TabViewPagerExperimental<T: *> extends React.Component <
       swipeVelocityThreshold: PropTypes.number,
       GestureHandler: PropTypes.object,
       handleStateChange: PropTypes.func,
+      goBack: PropTypes.func
     };
 
     static defaultProps = {
@@ -67,6 +68,15 @@ export default class TabViewPagerExperimental<T: *> extends React.Component <
             : navigationState.index;
 
         let nextIndex = currentIndex;
+
+        if (
+          translationX > 0 && Math.abs(translationX) > swipeDistanceThreshold
+        ) {
+          if (typeof this.props.goBack === 'function') {
+            this.props.goBack();
+          }
+          return
+        }
 
         if (
           Math.abs(translationX) > Math.abs(translationY) &&
@@ -153,6 +163,10 @@ export default class TabViewPagerExperimental<T: *> extends React.Component <
       this._pendingIndex = index;
     };
 
+    _onGestureEvent = (e) => {
+      // e.isPropagationStopped()
+    }
+
     _pendingIndex: ? number;
 
     render() {
@@ -183,6 +197,7 @@ export default class TabViewPagerExperimental<T: *> extends React.Component <
             { useNativeDriver: this.props.useNativeDriver }
           )}
           onHandlerStateChange={this._handleHandlerStateChange}
+          onGestureEvent={this._onGestureEvent}
         >
           <Animated.View
             style={[
