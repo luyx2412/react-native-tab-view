@@ -79,11 +79,6 @@ export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
     },
   };
 
-  constructor(props: Props<T>) {
-    super(props);
-    this._currentIndex = this.props.navigationState.index;
-  }
-
   componentWillMount() {
     this._panResponder = PanResponder.create({
       onMoveShouldSetPanResponder: this._canMoveScreen,
@@ -98,12 +93,9 @@ export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
 
   componentDidUpdate(prevProps: Props<T>) {
     if (prevProps.navigationState.index !== this.props.navigationState.index) {
-      this._currentIndex = this.props.navigationState.index;
       this._transitionTo(this.props.navigationState.index);
     }
   }
-
-  _currentIndex: number;
 
   _isMovingHorizontally = (evt: GestureEvent, gestureState: GestureState) => {
     return (
@@ -117,13 +109,12 @@ export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
       return false;
     }
 
-    const { navigationState: { routes } } = this.props;
+    const { navigationState: { routes, index } } = this.props;
 
     return (
       this._isMovingHorizontally(evt, gestureState) &&
-      ((gestureState.dx >= DEAD_ZONE && this._currentIndex > 0) ||
-        (gestureState.dx <= -DEAD_ZONE &&
-          this._currentIndex < routes.length - 1))
+      ((gestureState.dx >= DEAD_ZONE && index >= 0) ||
+        (gestureState.dx <= -DEAD_ZONE && index <= routes.length - 1))
     );
   };
 
@@ -159,10 +150,6 @@ export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
 
     let { swipeVelocityThreshold = 0.15 } = this.props;
 
-    if (typeof this.props.onSwipeEnd === 'function') {
-      this.props.onSwipeEnd(evt, gestureState);
-    }
-
     if (Platform.OS === 'android') {
       // on Android, velocity is way lower due to timestamp being in nanosecond
       // normalize it to have the same velocity on both iOS and Android
@@ -172,18 +159,9 @@ export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
     const currentIndex =
       typeof this._pendingIndex === 'number'
         ? this._pendingIndex
-        : this._currentIndex;
+        : navigationState.index;
 
     let nextIndex = currentIndex;
-
-    if (
-      translationX > 0 && Math.abs(translationX) > swipeDistanceThreshold
-    ) {
-      if (typeof this.props.goBack === 'function') {
-        this.props.goBack();
-      }
-      return
-    }
 
     if (
       Math.abs(gestureState.dx) > Math.abs(gestureState.dy) &&
@@ -200,7 +178,6 @@ export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
           navigationState.routes.length - 1
         )
       );
-      this._currentIndex = nextIndex;
     }
 
     if (
@@ -235,8 +212,7 @@ export default class TabViewPagerPan<T: *> extends React.Component<Props<T>> {
       }),
     ]).start(({ finished }) => {
       if (finished) {
-        const route = this.props.navigationState.routes[index];
-        this.props.jumpTo(route.key);
+        this.props.jumpToIndex(index);
         this._pendingIndex = null;
       }
     });

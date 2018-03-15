@@ -26,6 +26,7 @@ type Props<T> = PagerProps<T> & {
 };
 
 type State = {|
+  loaded: Array<number>,
   layout: Layout & { measured: boolean },
   layoutXY: Animated.ValueXY,
   panX: Animated.Value,
@@ -97,6 +98,7 @@ export default class TabViewAnimated<T: *> extends React.Component<
     );
 
     this.state = {
+      loaded: [navigationState.index],
       layout,
       layoutXY,
       panX,
@@ -151,18 +153,17 @@ export default class TabViewAnimated<T: *> extends React.Component<
     position: this.state.position,
     layout: this.state.layout,
     navigationState: this.props.navigationState,
-    jumpTo: this._jumpTo,
+    jumpToIndex: this._jumpToIndex,
     useNativeDriver: this.props.useNativeDriver === true,
   });
 
-  _jumpTo = (key: string) => {
+  _jumpToIndex = (index: number) => {
     if (!this._mounted) {
       // We are no longer mounted, this is a no-op
       return;
     }
 
     const { canJumpToTab, navigationState } = this.props;
-    const index = navigationState.routes.findIndex(route => route.key === key);
 
     if (!canJumpToTab(navigationState.routes[index])) {
       return;
@@ -190,30 +191,32 @@ export default class TabViewAnimated<T: *> extends React.Component<
     const props = this._buildSceneRendererProps();
 
     return (
-      <View collapsable={false} style={[styles.container, this.props.style]}>
+      <View
+        onLayout={this._handleLayout}
+        loaded={this.state.loaded}
+        style={[styles.container, this.props.style]}
+      >
         {renderHeader && renderHeader(props)}
-        <View onLayout={this._handleLayout} style={styles.pager}>
-          {renderPager({
-            ...props,
-            ...rest,
-            panX: this.state.panX,
-            offsetX: this.state.offsetX,
-            children: navigationState.routes.map((route, index) => {
-              const scene = this._renderScene({
-                ...props,
-                route,
-                index,
-                focused: index === navigationState.index,
-              });
+        {renderPager({
+          ...props,
+          ...rest,
+          panX: this.state.panX,
+          offsetX: this.state.offsetX,
+          children: navigationState.routes.map((route, index) => {
+            const scene = this._renderScene({
+              ...props,
+              route,
+              index,
+              focused: index === navigationState.index,
+            });
 
-              if (scene) {
-                return React.cloneElement(scene, { key: route.key });
-              }
+            if (scene) {
+              return React.cloneElement(scene, { key: route.key });
+            }
 
-              return scene;
-            }),
-          })}
-        </View>
+            return scene;
+          }),
+        })}
         {renderFooter && renderFooter(props)}
       </View>
     );
@@ -224,8 +227,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     overflow: 'hidden',
-  },
-  pager: {
-    flex: 1,
   },
 });
