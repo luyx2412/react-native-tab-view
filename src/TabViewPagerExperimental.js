@@ -70,6 +70,15 @@ export default class TabViewPagerExperimental<T: *> extends React.Component<
       let nextIndex = currentIndex;
 
       if (
+        translationX > 0 && Math.abs(translationX) > swipeDistanceThreshold
+      ) {
+        if (typeof this.props.goBack === 'function') {
+          this.props.goBack();
+        }
+        return
+      }
+
+      if (
         Math.abs(translationX) > Math.abs(translationY) &&
         Math.abs(velocityX) > Math.abs(velocityY) &&
         (Math.abs(translationX) > swipeDistanceThreshold ||
