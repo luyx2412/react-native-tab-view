@@ -14,7 +14,9 @@ type PageScrollEvent = {
 
 type PageScrollState = 'dragging' | 'settling' | 'idle';
 
-type Props<T> = PagerRendererProps<T>;
+type Props<T> = PagerRendererProps<T> & {
+  keyboardDismissMode: 'none' | 'on-drag',
+};
 
 export default class TabViewPagerAndroid<T: *> extends React.Component<
   Props<T>
@@ -23,6 +25,7 @@ export default class TabViewPagerAndroid<T: *> extends React.Component<
 
   static defaultProps = {
     canJumpToTab: () => true,
+    keyboardDismissMode: 'on-drag',
   };
 
   constructor(props: Props<T>) {
@@ -90,8 +93,10 @@ export default class TabViewPagerAndroid<T: *> extends React.Component<
 
     let nextIndex = this._currentIndex;
 
-    if (this.props.canJumpToTab(this.props.navigationState.routes[nextIndex])) {
-      this.props.jumpToIndex(nextIndex);
+    const nextRoute = this.props.navigationState.routes[nextIndex];
+
+    if (this.props.canJumpToTab(nextRoute)) {
+      this.props.jumpTo(nextRoute.key);
     } else {
       this._setPage(this.props.navigationState.index);
       this._currentIndex = this.props.navigationState.index;
@@ -106,7 +111,12 @@ export default class TabViewPagerAndroid<T: *> extends React.Component<
   _setRef = (el: ?ViewPagerAndroid) => (this._viewPager = el);
 
   render() {
-    const { children, navigationState, swipeEnabled } = this.props;
+    const {
+      children,
+      navigationState,
+      swipeEnabled,
+      keyboardDismissMode,
+    } = this.props;
     const content = React.Children.map(children, (child, i) => (
       <View
         key={navigationState.routes[i].key}
@@ -126,7 +136,7 @@ export default class TabViewPagerAndroid<T: *> extends React.Component<
     return (
       <ViewPagerAndroid
         key={navigationState.routes.length}
-        keyboardDismissMode="on-drag"
+        keyboardDismissMode={keyboardDismissMode}
         initialPage={initialPage}
         scrollEnabled={swipeEnabled !== false}
         onPageScroll={this._handlePageScroll}
