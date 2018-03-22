@@ -82,11 +82,11 @@ export default class TabViewPagerExperimental<T: *> extends React.Component <
               navigationState.routes.length - 1
             )
           );
-          if (nextIndex < currentIndex) {
-            this.props.goBack()
+          
+          if (nextIndex <= currentIndex) {
+            this.props.goBack();
             return
           }
-          console.log('next')
         }
 
         if (
